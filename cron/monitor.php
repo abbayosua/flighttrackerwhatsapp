@@ -81,7 +81,10 @@ foreach ($flights as $flight) {
 
         $mapBytes = null;
         if ((int) $flight['send_map'] === 1) {
-            $mapUrl = FlightTracker::mapUrl($flight['flightaware_url']);
+            $mapUrl = $data['map_url'] ?? '';
+            if ($mapUrl === '') {
+                $mapUrl = FlightTracker::mapUrl($flight['flightaware_url']);
+            }
             if ($mapUrl !== '') {
                 $mapBytes = FlightTracker::fetchMap($mapUrl);
                 log_line('  Map: ' . ($mapBytes !== null ? strlen($mapBytes) . ' bytes' : 'gagal download'));

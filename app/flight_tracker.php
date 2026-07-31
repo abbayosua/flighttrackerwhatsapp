@@ -28,19 +28,39 @@ class FlightTracker
 
         $status = self::extractStatus($html, $title);
         $position = self::extractPosition($html);
+        $mapUrl = self::extractMapUrl($html);
 
-        return ['status' => $status, 'title' => $title, 'position' => $position, 'error' => null];
+        return ['status' => $status, 'title' => $title, 'position' => $position, 'map_url' => $mapUrl, 'error' => null];
     }
 
     /** Build URL peta statis dari URL flight. */
     public static function mapUrl(string $flightUrl): string
     {
-        if (preg_match('#https?://[^/]+/live/flight/(.+?)(?:/history)?(/.*?)/?$#', $flightUrl, $m)) {
+        if (preg_match('#https?://[^/]+/live/flight/(.+?)(?:/history)?(/.*?)?/?$#', $flightUrl, $m)) {
             $base = $m[1];
-            $rest = $m[2] ?? '';
+            $rest = rtrim($m[2] ?? '', '/');
             return "https://www.flightaware.com/ajax/flight/map/{$base}{$rest}/?width=800&height=418&dpi=2";
         }
         return '';
+    }
+
+    /**
+     * Ambil URL peta dari HTML halaman flight (paling akurat,
+     * cocok untuk URL dengan atau tanpa /history).
+     */
+    public static function extractMapUrl(string $html): string
+    {
+        if (!preg_match_all('#https?://[^"\' ]*ajax/flight/map/[^"\' ]+#', $html, $matches)) {
+            return '';
+        }
+        foreach (array_unique($matches[0]) as $u) {
+            $u = html_entity_decode($u);
+            if (str_contains($u, 'width=800')) {
+                return $u;
+            }
+        }
+        $all = array_values(array_unique($matches[0]));
+        return html_entity_decode($all[0]);
     }
 
     /** Download peta → bytes PNG, atau null gagal. */
