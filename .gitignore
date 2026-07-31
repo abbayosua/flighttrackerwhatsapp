@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+monitor.log
+*.log
+
+app/config.local.php
