@@ -58,3 +58,15 @@ foreach ($phones as $phone) {
 }
 
 echo "Selesai. Login: {$username} / {$password}\n";
+
+// --- User shared untuk mode publik (tanpa login) ---
+$pub = DB::val("SELECT id FROM users WHERE username = '__public__'");
+if (!$pub) {
+    DB::exec(
+        'INSERT INTO users (username, password_hash, wuzapi_url, wuzapi_token) VALUES ("__public__", "*", ?, ?)',
+        [WUZAPI_DEFAULT_URL, WUZAPI_DEFAULT_TOKEN]
+    );
+    echo "User shared '__public__' dibuat (mode publik siap).\n";
+} else {
+    echo "User shared '__public__' sudah ada.\n";
+}
